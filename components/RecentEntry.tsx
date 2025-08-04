@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Activity, Pill, Calendar } from 'lucide-react-native';
 import { globalStyles } from '../styles/globalStyles';
+import { colors } from '../styles/colors';
 
 interface Entry {
   id: string;
@@ -21,19 +22,19 @@ export function RecentEntry({ entry }: RecentEntryProps) {
   const getIcon = () => {
     switch (entry.icon) {
       case 'pill':
-        return <Pill size={20} color={entry.color} />;
+        return <Pill size={20} color={colors.main.deepBlueGray} />;
       case 'activity':
-        return <Activity size={20} color={entry.color} />;
+        return <Activity size={20} color={colors.main.deepBlueGray} />;
       case 'calendar':
-        return <Calendar size={20} color={entry.color} />;
+        return <Calendar size={20} color={colors.main.deepBlueGray} />;
       default:
-        return <Activity size={20} color={entry.color} />;
+        return <Activity size={20} color={colors.main.deepBlueGray} />;
     }
   };
 
   return (
     <TouchableOpacity style={globalStyles.recentEntryContainer}>
-      <View style={[globalStyles.recentEntryIconContainer, { backgroundColor: `${entry.color}20` }]}>
+      <View style={globalStyles.recentEntryIconContainer}>
         {getIcon()}
       </View>
       <View style={globalStyles.recentEntryContent}>

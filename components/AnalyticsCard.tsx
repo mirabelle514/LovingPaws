@@ -21,10 +21,10 @@ interface AnalyticsCardProps {
 export function AnalyticsCard({ data }: AnalyticsCardProps) {
   const getTrendIcon = () => {
     if (data.trend === 'up') {
-      return <TrendingUp size={16} color={colors.background.primary} />;
+      return <TrendingUp size={16} color={colors.main.deepBlueGray} />;
     }
     if (data.trend === 'down') {
-      return <TrendingDown size={16} color={colors.background.primary} />;
+      return <TrendingDown size={16} color={colors.main.deepBlueGray} />;
     }
     return null;
   };

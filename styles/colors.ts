@@ -106,6 +106,7 @@ export const colors = {
     primary: '#F8F6F3',   // Warm Off-White
     secondary: '#FFFFFF', // White
     tertiary: '#D6D0DB', // Gentle Lavender-Gray
+    quaternary: '#8FA5C0', // Dusty Blue
   },
   // Text Colors
   text: {
@@ -119,7 +120,7 @@ export const colors = {
   border: {
     light: '#F0F2F5',
     medium: '#D6D0DB',    // Gentle Lavender-Gray
-    dark: '#8FA5C0',      // Dusty Blue
+    dark: '#2B3440',     // Deep Blue-Gray
   },
 
   // Shadow Colors (adapted to your palette)

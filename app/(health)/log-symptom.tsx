@@ -165,11 +165,11 @@ export default function LogSymptomScreen() {
         {/* Emergency Warning */}
         {symptomData.severity === 'Emergency' && (
           <View style={globalStyles.profileSection}>
-            <View style={[globalStyles.profileSection, { backgroundColor: colors.semantic.error + '20', borderRadius: 12, padding: 16 }]}>
-              <Text style={[globalStyles.profileSectionTitle, { color: colors.semantic.error }]}>
-                ⚠️ Emergency Symptom
+            <View style={globalStyles.emergencySymptomContainer}>
+              <Text style={globalStyles.emergencySymptomTitle}>
+                Emergency Symptom
               </Text>
-              <Text style={[globalStyles.profileFormLabel, { color: colors.semantic.error, marginTop: 8 }]}>
+              <Text style={globalStyles.emergencySymptomText}>
                 This symptom requires immediate veterinary attention. Please contact your veterinarian or emergency pet clinic right away.
               </Text>
             </View>

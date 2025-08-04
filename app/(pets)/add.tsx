@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, Plus, Camera, Dog, Cat } from 'lucide-react-native';
+import { ArrowLeft, Plus, Camera, Dog, Cat, Fish, Rabbit, Bird, HelpCircle } from 'lucide-react-native';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { globalStyles } from '@/styles/globalStyles';
@@ -84,12 +84,12 @@ export default function AddPetScreen() {
   };
 
   const petTypes = [
-    { id: 'Dog', label: 'Dog', icon: <Dog size={24} color={colors.main.deepBlueGray} /> },
-    { id: 'Cat', label: 'Cat', icon: <Cat size={24} color={colors.main.deepBlueGray} /> },
-    { id: 'Bird', label: 'Bird', icon: <Plus size={24} color={colors.main.deepBlueGray} /> },
-    { id: 'Fish', label: 'Fish', icon: <Plus size={24} color={colors.main.deepBlueGray} /> },
-    { id: 'Rabbit', label: 'Rabbit', icon: <Plus size={24} color={colors.main.deepBlueGray} /> },
-    { id: 'Other', label: 'Other', icon: <Plus size={24} color={colors.main.deepBlueGray} /> },
+    { id: 'Dog', label: 'Dog', icon: Dog },
+    { id: 'Cat', label: 'Cat', icon: Cat },
+    { id: 'Bird', label: 'Bird', icon: Bird },
+    { id: 'Fish', label: 'Fish', icon: Fish },
+    { id: 'Rabbit', label: 'Rabbit', icon: Rabbit },
+    { id: 'Other', label: 'Other', icon: HelpCircle },
   ];
 
   return (
@@ -121,7 +121,7 @@ export default function AddPetScreen() {
               )}
             </View>
             <TouchableOpacity style={globalStyles.profileHeaderCameraButton} onPress={handleImagePick}>
-              <Camera size={16} color={colors.main.deepBlueGray} />
+              <Camera size={20} color={colors.main.deepBlueGray} />
             </TouchableOpacity>
           </View>
         </View>
@@ -144,24 +144,31 @@ export default function AddPetScreen() {
           <View style={globalStyles.profileFormField}>
             <Text style={globalStyles.profileFormLabel}>Pet Type *</Text>
             <View style={globalStyles.petTypeGrid}>
-              {petTypes.map((type) => (
-                <TouchableOpacity
-                  key={type.id}
-                  style={[
-                    globalStyles.petTypeOption,
-                    formData.type === type.id && globalStyles.petTypeSelectedOption,
-                  ]}
-                  onPress={() => setFormData({ ...formData, type: type.id })}
-                >
-                  {type.icon}
-                  <Text style={[
-                    globalStyles.petTypeLabel,
-                    formData.type === type.id && globalStyles.petTypeSelectedLabel,
-                  ]}>
-                    {type.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+              {petTypes.map((type) => {
+                const IconComponent = type.icon;
+                const isSelected = formData.type === type.id;
+                return (
+                  <TouchableOpacity
+                    key={type.id}
+                    style={[
+                      globalStyles.petTypeOption,
+                      isSelected && globalStyles.petTypeSelectedOption,
+                    ]}
+                    onPress={() => setFormData({ ...formData, type: type.id })}
+                  >
+                    <IconComponent 
+                      size={24} 
+                      color={isSelected ? colors.background.primary : colors.main.deepBlueGray} 
+                    />
+                    <Text style={[
+                      globalStyles.petTypeLabel,
+                      isSelected && globalStyles.petTypeSelectedLabel,
+                    ]}>
+                      {type.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
 

@@ -72,19 +72,25 @@ class SupabaseService {
       
       for (const item of unsyncedItems) {
         try {
-          switch (item.operation) {
+          // Add safety checks for item properties
+          const operation = item.operation || 'INSERT';
+          const tableName = item.tableName || '';
+          const recordId = item.recordId || '';
+          const data = item.data ? JSON.parse(item.data) : {};
+
+          switch (operation) {
             case 'INSERT':
-              await this.insertRecord(item.tableName, item.recordId, JSON.parse(item.data || '{}'));
+              await this.insertRecord(tableName, recordId, data);
               break;
             case 'UPDATE':
-              await this.updateRecord(item.tableName, item.recordId, JSON.parse(item.data || '{}'));
+              await this.updateRecord(tableName, recordId, data);
               break;
             case 'DELETE':
-              await this.deleteRecord(item.tableName, item.recordId);
+              await this.deleteRecord(tableName, recordId);
               break;
           }
           
-          // Mark as synced
+          // Mark as synced (now protected by DatabaseService fixes)
           await databaseService.markAsSynced(item.id);
           await databaseService.markTableAsSynced(item.tableName as any, item.recordId);
           
@@ -136,20 +142,29 @@ class SupabaseService {
           const existingRecord = await this.getLocalRecord(tableName, record.id);
           
           if (!existingRecord) {
-            // Insert new record
+            // Insert new record (DatabaseService now handles undefined values)
             await this.insertLocalRecord(tableName, record);
-          } else if (new Date(record.updated_at) > new Date(existingRecord.updatedAt)) {
-            // Update existing record if cloud version is newer
-            await this.updateLocalRecord(tableName, record);
+          } else {
+            // Safe date comparison with fallbacks
+            const cloudDate = record.updated_at ? new Date(record.updated_at) : new Date(0);
+            const localDate = existingRecord.updatedAt ? new Date(existingRecord.updatedAt) : new Date(0);
+            
+            if (cloudDate > localDate) {
+              // Update existing record if cloud version is newer
+              await this.updateLocalRecord(tableName, record);
+            }
           }
         } catch (error) {
-          console.error(`Failed to sync record ${record.id} from ${tableName}:`, error);
+          console.error(`Failed to sync record ${record.id || 'unknown'} from ${tableName}:`, error);
         }
       }
     }
   }
 
   private async getLocalRecord(tableName: string, id: string): Promise<any> {
+    // Add safety check for id
+    if (!id) return null;
+
     switch (tableName) {
       case SUPABASE_TABLES.PETS:
         return await databaseService.getPetById(id);
@@ -163,6 +178,7 @@ class SupabaseService {
   }
 
   private async insertLocalRecord(tableName: string, record: any): Promise<void> {
+    // DatabaseService now handles undefined values in record
     switch (tableName) {
       case SUPABASE_TABLES.PETS:
         await databaseService.addPet(record);
@@ -177,6 +193,7 @@ class SupabaseService {
   }
 
   private async updateLocalRecord(tableName: string, record: any): Promise<void> {
+    // DatabaseService now handles undefined values in record
     switch (tableName) {
       case SUPABASE_TABLES.PETS:
         await databaseService.updatePet(record);
@@ -192,6 +209,11 @@ class SupabaseService {
 
   // Cloud CRUD operations
   private async insertRecord(tableName: string, recordId: string, data: any): Promise<void> {
+    // Add safety checks
+    if (!tableName || !recordId) {
+      throw new Error('Missing tableName or recordId for insert');
+    }
+
     const { error } = await this.client
       .from(tableName)
       .insert([{ id: recordId, ...data }]);
@@ -200,6 +222,11 @@ class SupabaseService {
   }
 
   private async updateRecord(tableName: string, recordId: string, data: any): Promise<void> {
+    // Add safety checks
+    if (!tableName || !recordId) {
+      throw new Error('Missing tableName or recordId for update');
+    }
+
     const { error } = await this.client
       .from(tableName)
       .update(data)
@@ -209,6 +236,11 @@ class SupabaseService {
   }
 
   private async deleteRecord(tableName: string, recordId: string): Promise<void> {
+    // Add safety checks
+    if (!tableName || !recordId) {
+      throw new Error('Missing tableName or recordId for delete');
+    }
+
     const { error } = await this.client
       .from(tableName)
       .delete()
@@ -272,4 +304,4 @@ class SupabaseService {
   }
 }
 
-export const supabaseService = new SupabaseService(); 
+export const supabaseService = new SupabaseService();

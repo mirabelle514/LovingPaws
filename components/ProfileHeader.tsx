@@ -82,7 +82,7 @@ export function ProfileHeader({
               )}
             </View>
             <TouchableOpacity style={globalStyles.profileHeaderCameraButton} onPress={handleCameraPress}>
-              <Camera size={16} color={colors.main.deepBlueGray} />
+              <Camera size={20} color={colors.main.deepBlueGray} />
             </TouchableOpacity>
           </View>
           <View style={globalStyles.profileHeaderUserInfo}>

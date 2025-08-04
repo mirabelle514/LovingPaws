@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Plus, Calendar, Pill, Activity, MapPin } from 'lucide-react-native';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { PetCard } from '@/components/PetCard';
 import { QuickActionCard } from '@/components/QuickActionCard';
@@ -17,40 +18,19 @@ import { DatabaseTest } from '@/components/DatabaseTest';
 import { globalStyles } from '@/styles/globalStyles';
 import { colors } from '@/styles/colors';
 import { usePets } from '@/contexts/PetContext';
+import { useHealthEntries } from '@/hooks/useHealthEntries';
 import { router } from 'expo-router';
 
 export default function HomeScreen() {
   const { pets } = usePets();
+  const { recentEntries, loading, error, refresh } = useHealthEntries(5);
 
-  const [recentEntries] = useState([
-    {
-      id: '1',
-      petName: 'Buddy',
-      type: 'Medication',
-      title: 'Flea Treatment',
-      time: '2 hours ago',
-      icon: 'pill',
-              color: colors.main.dustyBlue,
-    },
-    {
-      id: '2',
-      petName: 'Whiskers',
-      type: 'Symptom',
-      title: 'Decreased appetite',
-      time: '1 day ago',
-      icon: 'activity',
-              color: colors.semantic.error,
-    },
-    {
-      id: '3',
-      petName: 'Buddy',
-      type: 'Appointment',
-      title: 'Vaccination checkup',
-      time: '3 days ago',
-      icon: 'calendar',
-              color: colors.main.deepBlueGray,
-    },
-  ]);
+  // Refresh recent entries when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      refresh();
+    }, []) // Remove refresh from dependencies to prevent infinite loop
+  );
 
   return (
     <SafeAreaView style={globalStyles.homeContainer}>
@@ -96,25 +76,25 @@ export default function HomeScreen() {
           <Text style={globalStyles.homeSectionTitle}>Quick Actions</Text>
           <View style={globalStyles.homeQuickActions}>
               <QuickActionCard
-                icon={<Activity size={24} color={colors.background.primary} />}
+                icon={<Activity size={24} color={colors.main.deepBlueGray} />}
                 title="Log Symptom"
                 subtitle="Track health changes"
                 onPress={() => router.push('/(health)/log-symptom' as any)}
               />
               <QuickActionCard
-                icon={<Pill size={24} color={colors.background.primary} />}
+                icon={<Pill size={24} color={colors.main.deepBlueGray} />}
                 title="Give Medication"
                 subtitle="Record treatments"
                 onPress={() => router.push('/(health)/give-medication' as any)}
               />
               <QuickActionCard
-                icon={<Calendar size={24} color={colors.background.primary} />}
+                icon={<Calendar size={24} color={colors.main.deepBlueGray} />}
                 title="Schedule Visit"
                 subtitle="Book appointment"
                 onPress={() => router.push('/(health)/schedule-visit' as any)}
               />
               <QuickActionCard
-                icon={<MapPin size={24} color={colors.background.primary} />}
+                icon={<MapPin size={24} color={colors.main.deepBlueGray} />}
                 title="Find Vet"
                 subtitle="Locate nearby clinics"
                 onPress={() => router.push('/(tabs)/veterinary' as any)}
@@ -126,29 +106,46 @@ export default function HomeScreen() {
         <View style={globalStyles.homeSection}>
           <Text style={globalStyles.homeSectionTitle}>Recent Activity</Text>
           <View style={globalStyles.homeRecentEntries}>
-            {recentEntries.map((entry) => (
-              <RecentEntry key={entry.id} entry={entry} />
-            ))}
+            {loading ? (
+              <Text style={{ color: colors.text.secondary, textAlign: 'center', padding: 20 }}>
+                Loading recent activity...
+              </Text>
+            ) : error ? (
+              <Text style={{ color: colors.semantic.error, textAlign: 'center', padding: 20 }}>
+                {error}
+              </Text>
+            ) : recentEntries.length === 0 ? (
+              <Text style={{ color: colors.text.secondary, textAlign: 'center', padding: 20 }}>
+                No recent activity. Start by logging a health entry!
+              </Text>
+            ) : (
+              recentEntries.map((entry) => (
+                <RecentEntry key={entry.id} entry={entry} />
+              ))
+            )}
           </View>
         </View>
 
         {/* Health Insights */}
-      <View style={globalStyles.homeSection}>
-        <Text style={globalStyles.homeSectionTitle}>Health Insights</Text>
-          <View style={globalStyles.homeInsightCard}>
-            <View style={[globalStyles.homeInsightGradient, { backgroundColor: colors.main.softPeriwinkle }]}>
-              <View style={globalStyles.homeInsightContent}>
-                <Text style={globalStyles.homeInsightTitle}>Weekly Summary</Text>
-                <Text style={globalStyles.homeInsightText}>
-                  Buddy's appetite has improved 15% this week. Great progress!
-                </Text>
-                <TouchableOpacity style={globalStyles.homeInsightButton}>
-                  <Text style={globalStyles.homeInsightButtonText}>View Details</Text>
-                </TouchableOpacity>
+        {recentEntries.length > 0 && (
+          <View style={globalStyles.homeSection}>
+            <Text style={globalStyles.homeSectionTitle}>Health Insights</Text>
+            <View style={globalStyles.homeInsightCard}>
+              <View style={[globalStyles.homeInsightGradient, { backgroundColor: colors.main.deepBlueGray }]}>
+                <View style={globalStyles.homeInsightContent}>
+                  <Text style={globalStyles.homeInsightTitle}>Recent Activity Summary</Text>
+                  <Text style={globalStyles.homeInsightText}>
+                    {recentEntries.length} health entries recorded recently. 
+                    {recentEntries.length > 0 && ` Latest: ${recentEntries[0].petName}'s ${recentEntries[0].type.toLowerCase()}`}
+                  </Text>
+                  <TouchableOpacity style={globalStyles.homeInsightButton}>
+                    <Text style={globalStyles.homeInsightButtonText}>View Details</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
           </View>
-        </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

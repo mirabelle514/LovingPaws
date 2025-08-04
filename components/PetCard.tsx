@@ -56,7 +56,7 @@ export function PetCard({ pet }: PetCardProps) {
             />
           ) : (
             <View style={[globalStyles.petCardImage, { backgroundColor: colors.main.softPeriwinkle, justifyContent: 'center', alignItems: 'center' }]}>
-              <Text style={{ fontSize: 24, fontWeight: 'bold', color: colors.main.deepBlueGray }}>
+              <Text style={{ fontSize: 48, fontWeight: 'bold', color: colors.main.deepBlueGray }}>
                 {pet.name.charAt(0)}
               </Text>
             </View>

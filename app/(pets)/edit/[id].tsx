@@ -155,7 +155,7 @@ export default function EditPetScreen() {
               )}
             </View>
             <TouchableOpacity style={globalStyles.profileHeaderCameraButton} onPress={handleImagePick}>
-              <Camera size={16} color={colors.main.deepBlueGray} />
+              <Camera size={20} color={colors.main.deepBlueGray} />
             </TouchableOpacity>
           </View>
         </View>

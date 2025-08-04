@@ -24,7 +24,7 @@ interface PetProviderProps {
 
 export function PetProvider({ children }: PetProviderProps) {
   const [pets, setPets] = useState<Pet[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Set back to true for initial loading
 
   // Initialize database and load pets
   useEffect(() => {
@@ -32,6 +32,7 @@ export function PetProvider({ children }: PetProviderProps) {
       try {
         await databaseService.init();
         await loadPets();
+        console.log('Database initialized and pets loaded successfully');
       } catch (error) {
         console.error('Failed to initialize database:', error);
         Alert.alert('Database Error', 'Failed to initialize database. Please restart the app.');
@@ -47,6 +48,7 @@ export function PetProvider({ children }: PetProviderProps) {
     try {
       const petsData = await databaseService.getPets();
       setPets(petsData);
+      console.log('Loaded pets from database:', petsData.length);
     } catch (error) {
       console.error('Error loading pets:', error);
       Alert.alert('Error', 'Failed to load pets from database.');
@@ -99,7 +101,7 @@ export function PetProvider({ children }: PetProviderProps) {
   const deletePet = async (id: string) => {
     try {
       await databaseService.deletePet(id);
-      await databaseService.addToSyncQueue('pets', id, 'DELETE');
+      await databaseService.addToSyncQueue('pets', id, 'DELETE', { id });
       
       // Update local state
       setPets(prev => prev.filter(pet => pet.id !== id));
@@ -177,4 +179,4 @@ export function usePets() {
     throw new Error('usePets must be used within a PetProvider');
   }
   return context;
-} 
+}

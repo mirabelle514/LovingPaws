@@ -79,5 +79,6 @@ Email support will be available soon at [support@lovingpaws.app](mailto:mirabell
 - Icons from [Lucide](https://lucide.dev/)
 - Database powered by [Supabase](https://supabase.com/)
 
-Made with ❤️ for pet lovers everywhere
+Made with ❤️ for pet lovers everywhere.
+
 Part of [The Wednesday Collective](https://thewednesdaycollective.com/) | [The Wednesday Projects](https://thewednesdayprojects.com/)

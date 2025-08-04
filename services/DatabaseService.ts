@@ -1,15 +1,30 @@
 import * as SQLite from 'expo-sqlite';
-import { DATABASE_NAME, TABLES, CREATE_TABLES, CREATE_INDEXES, DROP_TABLES } from '../database/schema';
-import { Pet, HealthEntry, User, SyncQueue, TableName } from '../types/database';
+import { CREATE_TABLES, CREATE_INDEXES, DROP_TABLES } from '../database/schema';
+import { Pet, HealthEntry, User, SyncQueue, TableName, TABLES } from '../types/database';
+
+// Define database name (adjust this to match your actual database name)
+const DATABASE_NAME = 'petcare.db';
 
 class DatabaseService {
   private db: SQLite.SQLiteDatabase | null = null;
   private isInitialized = false;
+  private initPromise: Promise<void> | null = null;
 
   async init(): Promise<void> {
+    // If already initialized, return immediately
     if (this.isInitialized) return;
+    
+    // If initialization is in progress, wait for it
+    if (this.initPromise) return this.initPromise;
 
+    // Start initialization
+    this.initPromise = this.performInit();
+    return this.initPromise;
+  }
+
+  private async performInit(): Promise<void> {
     try {
+      console.log('Starting database initialization...');
       this.db = await SQLite.openDatabaseAsync(DATABASE_NAME);
       await this.createTables();
       await this.createIndexes();
@@ -17,6 +32,8 @@ class DatabaseService {
       console.log('Database initialized successfully');
     } catch (error) {
       console.error('Failed to initialize database:', error);
+      // Reset promises so retry is possible
+      this.initPromise = null;
       throw error;
     }
   }
@@ -70,9 +87,21 @@ class DatabaseService {
     `;
     
     await this.db.runAsync(sql, [
-      pet.id, pet.name, pet.type, pet.breed, pet.age, pet.weight,
-      pet.color, pet.microchipId, pet.dateOfBirth, pet.ownerNotes,
-      pet.image, pet.healthScore, pet.lastCheckup, now, now
+      pet.id || '',
+      pet.name || '',
+      pet.type || '',
+      pet.breed || '',
+      pet.age || '',
+      pet.weight || '',
+      pet.color || '',
+      pet.microchipId || null,
+      pet.dateOfBirth || null,
+      pet.ownerNotes || '',
+      pet.image || null, // This was the main culprit - undefined image
+      pet.healthScore ?? 0, // Use nullish coalescing for numbers
+      pet.lastCheckup || '',
+      now,
+      now
     ]);
   }
 
@@ -89,7 +118,21 @@ class DatabaseService {
       WHERE id = ?
     `;
     
-    const values = [...fields.map(field => pet[field as keyof Pet]), now, pet.id];
+    // Handle undefined values in partial updates
+    const values = [
+      ...fields.map(field => {
+        const value = pet[field as keyof Pet];
+        // Handle different types appropriately
+        if (value === undefined) {
+          return null;
+        }
+        // For string fields, convert empty to null if preferred, or keep as is
+        return value;
+      }),
+      now,
+      pet.id
+    ];
+    
     await this.db.runAsync(sql, values);
   }
 
@@ -109,7 +152,7 @@ class DatabaseService {
     const result = await this.db.getFirstAsync<Pet>(`
       SELECT * FROM ${TABLES.PETS} 
       WHERE id = ?
-    `, [id]);
+    `, [id || '']);
     return result || null;
   }
 
@@ -119,7 +162,7 @@ class DatabaseService {
     await this.db.runAsync(`
       DELETE FROM ${TABLES.PETS} 
       WHERE id = ?
-    `, [id]);
+    `, [id || '']);
   }
 
   // Health entry operations
@@ -133,8 +176,15 @@ class DatabaseService {
     `;
     
     await this.db.runAsync(sql, [
-      entry.id, entry.petId, entry.type, entry.title, entry.description,
-      entry.date, entry.time, entry.severity, entry.notes
+      entry.id || '',
+      entry.petId || '',
+      entry.type || '',
+      entry.title || '',
+      entry.description || '',
+      entry.date || null,
+      entry.time || null,
+      entry.severity || null,
+      entry.notes || ''
     ]);
   }
 
@@ -142,7 +192,7 @@ class DatabaseService {
     if (!this.db) throw new Error('Database not initialized');
 
     let sql = `SELECT * FROM ${TABLES.HEALTH_ENTRIES}`;
-    const params: string[] = [];
+    const params: (string | null)[] = [];
 
     if (petId) {
       sql += ` WHERE petId = ?`;
@@ -161,7 +211,7 @@ class DatabaseService {
     const result = await this.db.getFirstAsync<HealthEntry>(`
       SELECT * FROM ${TABLES.HEALTH_ENTRIES} 
       WHERE id = ?
-    `, [id]);
+    `, [id || '']);
     return result || null;
   }
 
@@ -171,7 +221,7 @@ class DatabaseService {
     await this.db.runAsync(`
       DELETE FROM ${TABLES.HEALTH_ENTRIES} 
       WHERE id = ?
-    `, [id]);
+    `, [id || '']);
   }
 
   // User operations
@@ -186,8 +236,14 @@ class DatabaseService {
     `;
     
     await this.db.runAsync(sql, [
-      user.id, user.userName, user.userEmail, user.profileImage,
-      user.avatarInitials, user.memberSince, now, now
+      user.id || '',
+      user.userName || '',
+      user.userEmail || '',
+      user.profileImage || null,
+      user.avatarInitials || '',
+      user.memberSince || null,
+      now,
+      now
     ]);
   }
 
@@ -204,7 +260,16 @@ class DatabaseService {
       WHERE id = ?
     `;
     
-    const values = [...fields.map(field => user[field as keyof User]), now, user.id];
+    // Handle undefined values in partial updates
+    const values = [
+      ...fields.map(field => {
+        const value = user[field as keyof User];
+        return value === undefined ? null : value;
+      }),
+      now,
+      user.id || ''
+    ];
+    
     await this.db.runAsync(sql, values);
   }
 
@@ -229,7 +294,10 @@ class DatabaseService {
     `;
     
     await this.db.runAsync(sql, [
-      `${tableName}_${recordId}_${Date.now()}`, tableName, recordId, operation, 
+      `${tableName || ''}_${recordId || ''}_${Date.now()}`,
+      tableName || '',
+      recordId || '',
+      operation || 'INSERT',
       data ? JSON.stringify(data) : null
     ]);
   }
@@ -252,7 +320,7 @@ class DatabaseService {
       UPDATE ${TABLES.SYNC_QUEUE} 
       SET synced = 1 
       WHERE id = ?
-    `, [id]);
+    `, [id || '']);
   }
 
   async markTableAsSynced(tableName: TableName, recordId: string): Promise<void> {
@@ -262,7 +330,7 @@ class DatabaseService {
       UPDATE ${tableName} 
       SET syncedToCloud = 1 
       WHERE id = ?
-    `, [recordId]);
+    `, [recordId || '']);
   }
 
   // Utility methods
@@ -286,4 +354,4 @@ class DatabaseService {
   }
 }
 
-export const databaseService = new DatabaseService(); 
+export const databaseService = new DatabaseService();

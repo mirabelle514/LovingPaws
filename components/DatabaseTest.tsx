@@ -101,10 +101,10 @@ export function DatabaseTest() {
       
       <View style={{ flexDirection: 'row', gap: 10, marginBottom: 15 }}>
         <TouchableOpacity 
-          style={[globalStyles.actionButtonPrimary, { flex: 1 }]} 
+          style={[globalStyles.actionButtonSecondary, { flex: 1 }]} 
           onPress={testDatabase}
         >
-          <Text style={globalStyles.actionButtonPrimaryText}>Run Tests</Text>
+          <Text style={globalStyles.actionButtonSecondaryText}>Run Tests</Text>
         </TouchableOpacity>
         
         <TouchableOpacity 

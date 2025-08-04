@@ -39,8 +39,8 @@ export function EntryTypeCard({ type, isSelected, onSelect }: EntryTypeCardProps
           ]}
         >
           {React.cloneElement(type.icon as React.ReactElement, {
-            color: isSelected ? colors.text.inverse : colors.main.deepBlueGray,
-          })}
+            color: isSelected ? colors.text.inverse : colors.text.primary,
+          } as any)}
         </View>
         <Text style={[globalStyles.entryTypeCardTitle, { color: isSelected ? colors.text.inverse : colors.text.primary }]}>
           {type.title}
