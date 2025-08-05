@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Heart, CirclePlus as PlusCircle, ChartBar as BarChart3, Stethoscope, User } from 'lucide-react-native';
+import { Heart, CirclePlus as PlusCircle, Stethoscope, User } from 'lucide-react-native';
 import { colors } from '@/styles/colors';
 
 export default function TabLayout() {
@@ -41,15 +41,7 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="analytics"
-        options={{
-          title: 'Analytics',
-          tabBarIcon: ({ size, color }) => (
-            <BarChart3 size={size} color={color} />
-          ),
-        }}
-      />
+
       <Tabs.Screen
         name="veterinary"
         options={{

@@ -1,6 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { SUPABASE_CONFIG, SUPABASE_TABLES } from '../config/supabase';
-import { Pet, HealthEntry, User, SyncQueue } from '../types/database';
+import { Pet, HealthEntry, User, SyncQueue } from './types';
 import { databaseService } from './DatabaseService';
 
 class SupabaseService {

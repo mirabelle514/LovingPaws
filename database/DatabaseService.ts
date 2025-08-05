@@ -1,6 +1,6 @@
 import * as SQLite from 'expo-sqlite';
 import { CREATE_TABLES, CREATE_INDEXES, DROP_TABLES } from '../database/schema';
-import { Pet, HealthEntry, User, SyncQueue, TableName, TABLES } from '../types/database';
+import { Pet, HealthEntry, User, SyncQueue, TableName, TABLES } from './types';
 
 // Define database name (adjust this to match your actual database name)
 const DATABASE_NAME = 'petcare.db';
@@ -28,6 +28,7 @@ class DatabaseService {
       this.db = await SQLite.openDatabaseAsync(DATABASE_NAME);
       await this.createTables();
       await this.createIndexes();
+      await this.runMigrations();
       this.isInitialized = true;
       console.log('Database initialized successfully');
     } catch (error) {
@@ -65,6 +66,47 @@ class DatabaseService {
     }
   }
 
+  private async runMigrations(): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    try {
+      // Check if weightUnit column exists
+      const checkWeightUnit = await this.db.getFirstAsync(`
+        SELECT name FROM pragma_table_info('pets') WHERE name = 'weightUnit'
+      `);
+      
+      if (!checkWeightUnit) {
+        console.log('Adding weightUnit column to pets table...');
+        await this.db.execAsync(`ALTER TABLE pets ADD COLUMN weightUnit TEXT`);
+      }
+
+      // Check if gender column exists
+      const checkGender = await this.db.getFirstAsync(`
+        SELECT name FROM pragma_table_info('pets') WHERE name = 'gender'
+      `);
+      
+      if (!checkGender) {
+        console.log('Adding gender column to pets table...');
+        await this.db.execAsync(`ALTER TABLE pets ADD COLUMN gender TEXT`);
+      }
+
+      // Check if ageUnit column exists
+      const checkAgeUnit = await this.db.getFirstAsync(`
+        SELECT name FROM pragma_table_info('pets') WHERE name = 'ageUnit'
+      `);
+      
+      if (!checkAgeUnit) {
+        console.log('Adding ageUnit column to pets table...');
+        await this.db.execAsync(`ALTER TABLE pets ADD COLUMN ageUnit TEXT`);
+      }
+
+      console.log('Database migrations completed successfully');
+    } catch (error) {
+      console.error('Failed to run migrations:', error);
+      // Don't throw here as migrations should be non-critical
+    }
+  }
+
   async resetDatabase(): Promise<void> {
     if (!this.db) throw new Error('Database not initialized');
 
@@ -82,8 +124,8 @@ class DatabaseService {
     const now = new Date().toISOString();
     const sql = `
       INSERT INTO ${TABLES.PETS} 
-      (id, name, type, breed, age, weight, color, microchipId, dateOfBirth, ownerNotes, image, healthScore, lastCheckup, createdAt, updatedAt, syncedToCloud)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+      (id, name, type, breed, age, ageUnit, weight, weightUnit, gender, color, microchipId, dateOfBirth, ownerNotes, image, healthScore, lastCheckup, createdAt, updatedAt, syncedToCloud)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
     `;
     
     await this.db.runAsync(sql, [
@@ -92,7 +134,10 @@ class DatabaseService {
       pet.type || '',
       pet.breed || '',
       pet.age || '',
+      pet.ageUnit || '',
       pet.weight || '',
+      pet.weightUnit || '',
+      pet.gender || '',
       pet.color || '',
       pet.microchipId || null,
       pet.dateOfBirth || null,
@@ -213,6 +258,28 @@ class DatabaseService {
       WHERE id = ?
     `, [id || '']);
     return result || null;
+  }
+
+  async updateHealthEntry(entry: HealthEntry): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    const sql = `
+      UPDATE ${TABLES.HEALTH_ENTRIES}
+      SET petId = ?, type = ?, title = ?, description = ?, date = ?, time = ?, severity = ?, notes = ?
+      WHERE id = ?
+    `;
+    
+    await this.db.runAsync(sql, [
+      entry.petId || '',
+      entry.type || '',
+      entry.title || '',
+      entry.description || '',
+      entry.date || null,
+      entry.time || null,
+      entry.severity || null,
+      entry.notes || '',
+      entry.id || ''
+    ]);
   }
 
   async deleteHealthEntry(id: string): Promise<void> {

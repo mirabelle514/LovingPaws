@@ -33,7 +33,7 @@ export function VetClinicCard({ clinic }: VetClinicCardProps) {
           <Text style={globalStyles.vetClinicCardDistance}>{clinic.distance} away</Text>
         </View>
         <View style={globalStyles.vetClinicCardRating}>
-                      <Star size={16} color={colors.accent.yellow} fill={colors.accent.yellow} />
+            <Star size={16} color={colors.accent.yellow} fill={colors.accent.yellow} />
           <Text style={globalStyles.vetClinicCardRatingText}>{clinic.rating}</Text>
         </View>
       </View>
@@ -63,11 +63,11 @@ export function VetClinicCard({ clinic }: VetClinicCardProps) {
 
       <View style={globalStyles.vetClinicCardActions}>
         <TouchableOpacity style={globalStyles.vetClinicCardActionButton}>
-                      <Phone size={16} color={colors.main.deepBlueGray} />
+            <Phone size={16} color={colors.main.deepBlueGray} />
           <Text style={globalStyles.vetClinicCardActionText}>Call</Text>
         </TouchableOpacity>
         <TouchableOpacity style={globalStyles.vetClinicCardActionButton}>
-                      <Navigation size={16} color={colors.main.deepBlueGray} />
+            <Navigation size={16} color={colors.main.deepBlueGray} />
           <Text style={globalStyles.vetClinicCardActionText}>Directions</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[globalStyles.vetClinicCardActionButton, globalStyles.vetClinicCardPrimaryAction]}>

@@ -13,7 +13,9 @@ export function generateAvatarInitials(name: string): string {
 }
 
 export function formatDate(date: string | Date): string {
-  const d = new Date(date);
+  // Convert YYYY/MM/DD to YYYY-MM-DD for proper date parsing
+  const dateStr = typeof date === 'string' ? date.replace(/\//g, '-') : date;
+  const d = new Date(dateStr);
   return d.toISOString().split('T')[0]; // YYYY-MM-DD format
 }
 
@@ -38,7 +40,8 @@ export function calculateHealthScore(entries: any[]): number {
   // Simple health score calculation based on recent entries
   // This can be made more sophisticated later
   const recentEntries = entries.filter(entry => {
-    const entryDate = new Date(entry.date);
+    // Convert YYYY/MM/DD to YYYY-MM-DD for proper date parsing
+    const entryDate = new Date(entry.date.replace(/\//g, '-'));
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     return entryDate > thirtyDaysAgo;

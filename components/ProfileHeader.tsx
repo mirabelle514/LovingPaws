@@ -68,7 +68,7 @@ export function ProfileHeader({
   };
   return (
     <View style={globalStyles.profileHeaderContainer}>
-      <View style={[globalStyles.profileHeaderGradient, { backgroundColor: colors.main.deepBlueGray }]}>
+              <View style={[globalStyles.profileHeaderBackground, { backgroundColor: colors.main.deepBlueGray }]}>
         <View style={globalStyles.profileHeaderSection}>
           <View style={globalStyles.profileHeaderAvatarContainer}>
             <View style={globalStyles.profileHeaderAvatar}>

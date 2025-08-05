@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, Image, Keyboard, Platform, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Plus, Camera, Dog, Cat, Fish, Rabbit, Bird, HelpCircle } from 'lucide-react-native';
 import { router } from 'expo-router';
@@ -10,11 +10,13 @@ import { usePets } from '@/contexts/PetContext';
 
 export default function AddPetScreen() {
   const { addPet } = usePets();
+
   const [formData, setFormData] = useState({
     name: '',
     type: '',
     breed: '',
     age: '',
+    ageUnit: 'years',
     weight: '',
     color: '',
     microchipId: '',
@@ -92,18 +94,30 @@ export default function AddPetScreen() {
     { id: 'Other', label: 'Other', icon: HelpCircle },
   ];
 
+
+
   return (
     <SafeAreaView style={globalStyles.profileContainer}>
-      <ScrollView style={globalStyles.profileScrollView} showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <ScrollView 
+          style={globalStyles.profileScrollView} 
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 100 }}
+        >
         {/* Header */}
         <View style={globalStyles.profileHeader}>
           <TouchableOpacity onPress={() => router.back()} style={globalStyles.profileHeaderBackButton}>
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <Text style={globalStyles.profileHeaderTitle}>Add New Pet</Text>
-          <View style={globalStyles.profileHeaderSaveButton}>
-            <Plus size={24} color={colors.main.deepBlueGray} />
-          </View>
+          <TouchableOpacity onPress={handleSave} style={globalStyles.profileHeaderSaveButton}>
+            <Text style={globalStyles.profileSaveButtonText}>Save</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Pet Photo Section */}
@@ -138,6 +152,8 @@ export default function AddPetScreen() {
               onChangeText={(text) => setFormData({ ...formData, name: text })}
               placeholder="Enter pet's name"
               placeholderTextColor={colors.text.secondary}
+              returnKeyType="done"
+              onSubmitEditing={() => Keyboard.dismiss()}
             />
           </View>
 
@@ -180,6 +196,8 @@ export default function AddPetScreen() {
               onChangeText={(text) => setFormData({ ...formData, breed: text })}
               placeholder="Enter breed"
               placeholderTextColor={colors.text.secondary}
+              returnKeyType="done"
+              onSubmitEditing={() => Keyboard.dismiss()}
             />
           </View>
 
@@ -189,19 +207,36 @@ export default function AddPetScreen() {
               style={globalStyles.profileFormInput}
               value={formData.age}
               onChangeText={(text) => setFormData({ ...formData, age: text })}
-              placeholder="e.g., 3 years, 6 months"
+              placeholder="e.g., 3 years"
               placeholderTextColor={colors.text.secondary}
+              returnKeyType="done"
+              onSubmitEditing={() => Keyboard.dismiss()}
             />
+
           </View>
 
-          <View style={globalStyles.profileFormField}>
+                    <View style={globalStyles.profileFormField}>
             <Text style={globalStyles.profileFormLabel}>Date of Birth</Text>
             <TextInput
               style={globalStyles.profileFormInput}
               value={formData.dateOfBirth}
-              onChangeText={(text) => setFormData({ ...formData, dateOfBirth: text })}
-              placeholder="YYYY-MM-DD"
+              onChangeText={(text) => {
+                // Remove all non-numeric characters
+                const numbersOnly = text.replace(/[^0-9]/g, '');
+                
+                // Format as YYYY/MM/DD
+                let formatted = '';
+                if (numbersOnly.length >= 1) formatted += numbersOnly.slice(0, 4);
+                if (numbersOnly.length >= 5) formatted += '/' + numbersOnly.slice(4, 6);
+                if (numbersOnly.length >= 7) formatted += '/' + numbersOnly.slice(6, 8);
+                
+                setFormData({ ...formData, dateOfBirth: formatted });
+              }}
+              placeholder="YYYY/MM/DD"
               placeholderTextColor={colors.text.secondary}
+              keyboardType="numeric"
+              returnKeyType="done"
+              onSubmitEditing={() => Keyboard.dismiss()}
             />
           </View>
         </View>
@@ -218,6 +253,8 @@ export default function AddPetScreen() {
               onChangeText={(text) => setFormData({ ...formData, weight: text })}
               placeholder="e.g., 65 lbs, 12 kg"
               placeholderTextColor={colors.text.secondary}
+              returnKeyType="done"
+              onSubmitEditing={() => Keyboard.dismiss()}
             />
           </View>
 
@@ -229,6 +266,8 @@ export default function AddPetScreen() {
               onChangeText={(text) => setFormData({ ...formData, color: text })}
               placeholder="e.g., Golden, Black, White"
               placeholderTextColor={colors.text.secondary}
+              returnKeyType="done"
+              onSubmitEditing={() => Keyboard.dismiss()}
             />
           </View>
 
@@ -240,6 +279,8 @@ export default function AddPetScreen() {
               onChangeText={(text) => setFormData({ ...formData, microchipId: text })}
               placeholder="Enter microchip number"
               placeholderTextColor={colors.text.secondary}
+              returnKeyType="done"
+              onSubmitEditing={() => Keyboard.dismiss()}
             />
           </View>
 
@@ -254,6 +295,8 @@ export default function AddPetScreen() {
               multiline
               numberOfLines={3}
               textAlignVertical="top"
+              returnKeyType="default"
+              blurOnSubmit={true}
             />
           </View>
         </View>
@@ -261,10 +304,11 @@ export default function AddPetScreen() {
         {/* Save Button */}
         <View style={globalStyles.profileSection}>
           <TouchableOpacity style={globalStyles.profileSaveButton} onPress={handleSave}>
-            <Text style={globalStyles.profileSaveButtonText}>Add Pet</Text>
+            <Text style={globalStyles.profileSaveButtonText}>Save Pet</Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 } 

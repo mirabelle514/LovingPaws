@@ -19,9 +19,9 @@ export default function ArchiveScreen() {
     const petToRestore = restorePet(petId);
     if (petToRestore) {
       // Remove archived fields before adding back
-      const { archivedAt, archivedReason, ...petData } = petToRestore;
+      const { archivedAt, archivedReason, ...petData } = petToRestore as any;
       addPet(petData);
-      Alert.alert('Pet Restored', `${petToRestore.name} has been restored successfully!`);
+      Alert.alert('Pet Restored', `${(petToRestore as any).name} has been restored successfully!`);
     }
   };
 
@@ -72,7 +72,8 @@ export default function ArchiveScreen() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
+    // Convert YYYY/MM/DD to YYYY-MM-DD for proper date parsing
+    return new Date(dateString.replace(/\//g, '-')).toLocaleDateString();
   };
 
   return (
@@ -133,7 +134,7 @@ export default function ArchiveScreen() {
                 </Text>
               </View>
             ) : (
-              archivedPets.map((pet) => (
+              archivedPets.map((pet: any) => (
                 <View key={pet.id} style={[globalStyles.profileSettingsItem, { marginBottom: 12 }]}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
                     {pet.image ? (

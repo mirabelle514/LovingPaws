@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Activity, Pill, Calendar } from 'lucide-react-native';
+import { router } from 'expo-router';
 import { globalStyles } from '../styles/globalStyles';
 import { colors } from '../styles/colors';
 
@@ -32,8 +33,15 @@ export function RecentEntry({ entry }: RecentEntryProps) {
     }
   };
 
+  const handlePress = () => {
+    router.push(`/(health)/entry-details/${entry.id}` as any);
+  };
+
   return (
-    <TouchableOpacity style={globalStyles.recentEntryContainer}>
+    <TouchableOpacity 
+      style={globalStyles.recentEntryContainer}
+      onPress={handlePress}
+    >
       <View style={globalStyles.recentEntryIconContainer}>
         {getIcon()}
       </View>

@@ -5,7 +5,7 @@ import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { UserProvider } from '@/contexts/UserContext';
 import { PetProvider } from '@/contexts/PetContext';
 import { ArchiveProvider } from '@/contexts/ArchiveContext';
-import { databaseService } from '@/services/DatabaseService';
+import { databaseService } from '@/database/DatabaseService';
 
 export default function RootLayout() {
   useFrameworkReady();

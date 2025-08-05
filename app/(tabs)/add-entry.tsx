@@ -4,6 +4,10 @@ import {
   Text,
   ScrollView,
   TextInput,
+  TouchableOpacity,
+  Keyboard,
+  Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -15,6 +19,7 @@ import {
   Utensils,
   Droplets,
   Stethoscope,
+  ArrowLeft,
 } from 'lucide-react-native';
 
 import { EntryTypeCard } from '@/components/EntryTypeCard';
@@ -23,6 +28,7 @@ import { ActionButton } from '@/components/ActionButton';
 import { globalStyles } from '@/styles/globalStyles';
 import { colors } from '@/styles/colors';
 import { usePets } from '@/contexts/PetContext';
+import { router } from 'expo-router';
 
 export default function AddEntryScreen() {
   const { pets } = usePets();
@@ -36,65 +42,75 @@ export default function AddEntryScreen() {
       title: 'Symptom',
       subtitle: 'Track health changes',
       icon: <Activity size={24} color={colors.background.primary} />,
-      gradient: [colors.main.deepBlueGray, colors.main.dustyBlue] as readonly string[],
     },
     {
       id: 'medication',
       title: 'Medication',
       subtitle: 'Record treatments',
       icon: <Pill size={24} color={colors.background.primary} />,
-      gradient: [colors.main.dustyBlue, colors.main.gentleLavenderGray] as readonly string[],
     },
     {
       id: 'appointment',
       title: 'Appointment',
       subtitle: 'Vet visits & checkups',
       icon: <Calendar size={24} color={colors.background.primary} />,
-      gradient: [colors.main.softPeriwinkle, colors.main.dustyBlue] as readonly string[],
     },
     {
       id: 'behavior',
       title: 'Behavior',
       subtitle: 'Mood & activity',
       icon: <Heart size={24} color={colors.background.primary} />,
-      gradient: [colors.main.gentleLavenderGray, colors.main.softPeriwinkle] as readonly string[],
     },
     {
       id: 'vitals',
       title: 'Vitals',
       subtitle: 'Temperature, weight',
       icon: <Thermometer size={24} color={colors.background.primary} />,
-      gradient: [colors.main.deepBlueGray, colors.main.softPeriwinkle] as readonly string[],
     },
     {
       id: 'feeding',
       title: 'Feeding',
       subtitle: 'Food & water intake',
       icon: <Utensils size={24} color={colors.background.primary} />,
-      gradient: [colors.main.dustyBlue, colors.main.deepBlueGray] as readonly string[],
     },
     {
       id: 'hydration',
       title: 'Hydration',
       subtitle: 'Water consumption',
       icon: <Droplets size={24} color={colors.background.primary} />,
-      gradient: [colors.main.softPeriwinkle, colors.main.gentleLavenderGray] as readonly string[],
     },
     {
       id: 'examination',
       title: 'Examination',
       subtitle: 'Physical checkup',
       icon: <Stethoscope size={24} color={colors.background.primary} />,
-      gradient: [colors.main.gentleLavenderGray, colors.main.deepBlueGray] as readonly string[],
-        },
+    },
   ];
 
   return (
     <SafeAreaView style={globalStyles.addEntryContainer}>
-      <ScrollView style={globalStyles.addEntryScrollView} showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <ScrollView 
+          style={globalStyles.addEntryScrollView} 
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 100 }}
+        >
         {/* Header */}
         <View style={globalStyles.addEntryHeader}>
-          <Text style={globalStyles.addEntryTitle}>Add Health Entry</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+            <TouchableOpacity
+              style={globalStyles.headerButton}
+              onPress={() => router.push('/(tabs)/' as any)}
+            >
+              <ArrowLeft size={24} color={colors.text.primary} />
+            </TouchableOpacity>
+            <Text style={globalStyles.addEntryTitle}>Add Health Entry</Text>
+          </View>
           <Text style={globalStyles.addEntrySubtitle}>
             Track your pet's health and wellbeing
           </Text>
@@ -139,6 +155,8 @@ export default function AddEntryScreen() {
                 value={notes}
                 onChangeText={setNotes}
                 textAlignVertical="top"
+                returnKeyType="default"
+                blurOnSubmit={true}
               />
             </View>
           </View>
@@ -165,7 +183,8 @@ export default function AddEntryScreen() {
             />
           </View>
         )}
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

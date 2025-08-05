@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { databaseService } from '../services/DatabaseService';
-import { HealthEntry } from '../types/database';
+import { databaseService } from '../database/DatabaseService';
+import { HealthEntry } from '../database/types';
 
 export interface RecentEntryData {
   id: string;
@@ -32,7 +32,12 @@ export function useHealthEntries(limit: number = 10) {
       
       // Sort by date (most recent first) and limit
       const sortedEntries: HealthEntry[] = healthEntries
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .sort((a, b) => {
+          // Convert YYYY/MM/DD to YYYY-MM-DD for proper date parsing
+          const dateA = a.date ? new Date(a.date.replace(/\//g, '-')).getTime() : 0;
+          const dateB = b.date ? new Date(b.date.replace(/\//g, '-')).getTime() : 0;
+          return dateB - dateA;
+        })
         .slice(0, limit);
 
       // Transform to RecentEntryData format
@@ -58,12 +63,33 @@ export function useHealthEntries(limit: number = 10) {
               }
             };
 
-            // Calculate time ago
-            const getTimeAgo = (date: string | undefined) => {
-              if (!date || typeof date !== 'string' || date.trim() === '') return 'Unknown time';
+            // Calculate time display
+            const getTimeDisplay = (entry: HealthEntry) => {
+              if (!entry.date || typeof entry.date !== 'string' || entry.date.trim() === '') return 'Unknown time';
               
+              // For appointments, show the scheduled date and time
+              if (entry.type === 'appointment') {
+                const date = new Date(entry.date.replace(/\//g, '-'));
+                if (isNaN(date.getTime())) return 'Invalid date';
+                
+                const formattedDate = date.toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric'
+                });
+                
+                // If there's a time, include it
+                if (entry.time) {
+                  return `${formattedDate} at ${entry.time}`;
+                }
+                
+                return formattedDate;
+              }
+              
+              // For other entries, show relative time
               const now = new Date();
-              const entryDate = new Date(date);
+              // Convert YYYY/MM/DD to YYYY-MM-DD for proper date parsing
+              const entryDate = new Date(entry.date.replace(/\//g, '-'));
               
               // Check if date is valid
               if (isNaN(entryDate.getTime())) return 'Invalid date';
@@ -85,7 +111,7 @@ export function useHealthEntries(limit: number = 10) {
               petName: pet?.name || 'Unknown Pet',
               type: (entry.type || 'unknown').charAt(0).toUpperCase() + (entry.type || 'unknown').slice(1),
               title: entry.title || 'Untitled Entry',
-              time: getTimeAgo(entry.date),
+              time: getTimeDisplay(entry),
               icon: getIcon(entry.type || 'unknown'),
               color: '#4A5568' // Default color, you can customize based on type
             };

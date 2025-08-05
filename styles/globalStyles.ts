@@ -80,7 +80,7 @@ export const globalStyles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 5,
   },
-  homeInsightGradient: {
+  homeInsightBackground: {
     padding: 20,
   },
   homeInsightContent: {
@@ -344,7 +344,7 @@ export const globalStyles = StyleSheet.create({
   profileHeaderContainer: {
     marginBottom: 24,
   },
-  profileHeaderGradient: {
+  profileHeaderBackground: {
     paddingHorizontal: 20,
     paddingVertical: 24,
   },
@@ -988,7 +988,7 @@ export const globalStyles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 5,
   },
-  analyticsInsightGradient: {
+  analyticsInsightBackground: {
     padding: 20,
   },
   analyticsInsightHeader: {
@@ -1363,7 +1363,7 @@ export const globalStyles = StyleSheet.create({
   },
   profileSaveButtonText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '600',
     color: colors.background.primary,
   },
   profileHeaderAvatarImage: {
@@ -1418,4 +1418,152 @@ export const globalStyles = StyleSheet.create({
     color: colors.text.primary,
     marginTop: 8,
   },
+
+  // Health Entry Details Styles
+  container: {
+    flex: 1,
+    backgroundColor: colors.background.primary,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border.light,
+    backgroundColor: colors.background.primary,
+  },
+  headerButton: {
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text.primary,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  card: {
+    backgroundColor: colors.background.secondary,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: colors.shadow.medium,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text.primary,
+    marginBottom: 4,
+  },
+  cardSubtitle: {
+    fontSize: 16,
+    color: colors.text.secondary,
+  },
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.border.light,
+    marginVertical: 16,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  detailLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text.secondary,
+    marginBottom: 8,
+  },
+  detailValue: {
+    fontSize: 16,
+    color: colors.text.primary,
+    flex: 1,
+    textAlign: 'right',
+  },
+
+  // Dropdown Styles
+  dropdownContainer: {
+    backgroundColor: colors.background.secondary,
+    borderRadius: 8,
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    position: 'absolute',
+    top: 60,
+    zIndex: 1000,
+    elevation: 5,
+    shadowColor: colors.shadow.dark,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  dropdownOption: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border.light,
+  },
+  dropdownOptionText: {
+    textAlign: 'center',
+  },
+  dropdownOptionTextSelected: {
+    color: colors.main.deepBlueGray,
+    fontWeight: '600',
+  },
+  dropdownOptionTextUnselected: {
+    color: colors.text.primary,
+    fontWeight: '400',
+  },
+  dropdownTrigger: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  dropdownText: {
+    color: colors.text.primary,
+  },
+  dropdownTextPlaceholder: {
+    color: colors.text.secondary,
+  },
+  formRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  formInputFlex: {
+    flex: 0.6,
+  },
+  formInputFull: {
+    flex: 1,
+  },
+  formDropdownFlex: {
+    flex: 0.4,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  formInputMultiline: {
+    height: 80,
+  },
+
 }); 

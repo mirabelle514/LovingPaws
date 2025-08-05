@@ -7,23 +7,54 @@ import {
 } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, Calendar, Pill, Activity, MapPin } from 'lucide-react-native';
+import { Plus, Calendar, Pill, Activity, BarChart3 } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
 import { PetCard } from '@/components/PetCard';
 import { QuickActionCard } from '@/components/QuickActionCard';
 import { RecentEntry } from '@/components/RecentEntry';
 import { EmergencyAlert } from '@/components/EmergencyAlert';
-import { DatabaseTest } from '@/components/DatabaseTest';
+import DatabaseTest from '@/components/DatabaseTest';
 import { globalStyles } from '@/styles/globalStyles';
 import { colors } from '@/styles/colors';
 import { usePets } from '@/contexts/PetContext';
+import { useUser } from '@/contexts/UserContext';
 import { useHealthEntries } from '@/hooks/useHealthEntries';
 import { router } from 'expo-router';
 
 export default function HomeScreen() {
   const { pets } = usePets();
+  const { userData } = useUser();
   const { recentEntries, loading, error, refresh } = useHealthEntries(5);
+
+  // Dynamic greeting based on time of day and user name
+  const getDynamicGreeting = () => {
+    const hour = new Date().getHours();
+    const userName = userData.userName.split(' ')[0]; // Get first name only
+    
+    if (hour >= 5 && hour < 12) {
+      return `Good morning, ${userName}!`;
+    } else if (hour >= 12 && hour < 17) {
+      return `Good afternoon, ${userName}!`;
+    } else if (hour >= 17 && hour < 21) {
+      return `Good evening, ${userName}!`;
+    } else {
+      return `Good night, ${userName}!`;
+    }
+  };
+
+  // Dynamic welcome text based on pets
+  const getDynamicWelcomeText = () => {
+    if (pets.length === 0) {
+      return "Ready to add your first pet?";
+    } else if (pets.length === 1) {
+      const pet = pets[0];
+      return `Let's check on ${pet.name}`;
+    } else {
+      // 2 pets and more - show first pet and "and company"
+      return `Let's check on ${pets[0].name}and company`;
+    }
+  };
 
   // Refresh recent entries when screen comes into focus
   useFocusEffect(
@@ -38,16 +69,16 @@ export default function HomeScreen() {
         {/* Header */}
         <View style={globalStyles.homeHeader}>
           <View>
-            <Text style={globalStyles.homeGreeting}>Good morning!</Text>
-            <Text style={globalStyles.homeWelcomeText}>Let's check on your furry babies</Text>
+            <Text style={globalStyles.homeGreeting}>{getDynamicGreeting()}</Text>
+            <Text style={globalStyles.homeWelcomeText}>{getDynamicWelcomeText()}</Text>
           </View>
         </View>
 
         {/* Emergency Alert */}
         <EmergencyAlert />
 
-        {/* Database Test (Temporary) */}
-        <DatabaseTest />
+       {/* Database Test (Temporary) */}
+        {/* <DatabaseTest /> */}
 
         {/* My Pets Section */}
         <View style={globalStyles.homeSection}>
@@ -93,11 +124,12 @@ export default function HomeScreen() {
                 subtitle="Book appointment"
                 onPress={() => router.push('/(health)/schedule-visit' as any)}
               />
+
               <QuickActionCard
-                icon={<MapPin size={24} color={colors.main.deepBlueGray} />}
-                title="Find Vet"
-                subtitle="Locate nearby clinics"
-                onPress={() => router.push('/(tabs)/veterinary' as any)}
+                icon={<BarChart3 size={24} color={colors.main.deepBlueGray} />}
+                title="Analytics"
+                subtitle="View health insights"
+                onPress={() => router.push('/analytics' as any)}
               />
           </View>
         </View>
@@ -131,15 +163,65 @@ export default function HomeScreen() {
           <View style={globalStyles.homeSection}>
             <Text style={globalStyles.homeSectionTitle}>Health Insights</Text>
             <View style={globalStyles.homeInsightCard}>
-              <View style={[globalStyles.homeInsightGradient, { backgroundColor: colors.main.deepBlueGray }]}>
+              <View style={[globalStyles.homeInsightBackground, { backgroundColor: colors.main.deepBlueGray }]}>
                 <View style={globalStyles.homeInsightContent}>
-                  <Text style={globalStyles.homeInsightTitle}>Recent Activity Summary</Text>
+                  <Text style={globalStyles.homeInsightTitle}>Activity Overview</Text>
+                  
+                  {/* Activity Count */}
                   <Text style={globalStyles.homeInsightText}>
-                    {recentEntries.length} health entries recorded recently. 
-                    {recentEntries.length > 0 && ` Latest: ${recentEntries[0].petName}'s ${recentEntries[0].type.toLowerCase()}`}
+                    {recentEntries.length} health entries in the last 30 days
                   </Text>
-                  <TouchableOpacity style={globalStyles.homeInsightButton}>
-                    <Text style={globalStyles.homeInsightButtonText}>View Details</Text>
+                  
+                  {/* Entry Type Breakdown */}
+                  {(() => {
+                    const typeCounts = recentEntries.reduce((acc, entry) => {
+                      acc[entry.type] = (acc[entry.type] || 0) + 1;
+                      return acc;
+                    }, {} as Record<string, number>);
+                    
+                    const typeBreakdown = Object.entries(typeCounts)
+                      .map(([type, count]) => `${count} ${type.toLowerCase()}${count > 1 ? 's' : ''}`)
+                      .join(', ');
+                    
+                    return (
+                      <Text style={globalStyles.homeInsightText}>
+                        Includes: {typeBreakdown}
+                      </Text>
+                    );
+                  })()}
+                  
+                  {/* Most Active Pet */}
+                  {(() => {
+                    const petCounts = recentEntries.reduce((acc, entry) => {
+                      acc[entry.petName] = (acc[entry.petName] || 0) + 1;
+                      return acc;
+                    }, {} as Record<string, number>);
+                    
+                    const mostActivePet = Object.entries(petCounts)
+                      .sort(([,a], [,b]) => b - a)[0];
+                    
+                    if (mostActivePet) {
+                      return (
+                        <Text style={globalStyles.homeInsightText}>
+                          {mostActivePet[0]} has the most activity ({mostActivePet[1]} entries)
+                        </Text>
+                      );
+                    }
+                    return null;
+                  })()}
+                  
+                  {/* Latest Activity */}
+                  {recentEntries.length > 0 && (
+                    <Text style={globalStyles.homeInsightText}>
+                      Latest: {recentEntries[0].petName}'s {recentEntries[0].type.toLowerCase()} - {recentEntries[0].time}
+                    </Text>
+                  )}
+                  
+                  <TouchableOpacity 
+                    style={globalStyles.homeInsightButton}
+                    onPress={() => router.push('/analytics' as any)}
+                  >
+                    <Text style={globalStyles.homeInsightButtonText}>View Detailed Analytics</Text>
                   </TouchableOpacity>
                 </View>
               </View>

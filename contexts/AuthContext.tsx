@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Alert } from 'react-native';
-import { supabaseService } from '../services/SupabaseService';
-import { databaseService } from '../services/DatabaseService';
-import { User } from '../types/database';
+import { supabaseService } from '../database/SupabaseService';
+import { databaseService } from '../database/DatabaseService';
+import { User } from '../database/types';
 import { generateAvatarInitials } from '../utils/helpers';
 
 interface AuthContextType {

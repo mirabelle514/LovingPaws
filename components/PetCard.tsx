@@ -1,44 +1,20 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Image, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { router } from 'expo-router';
+import { Edit3 } from 'lucide-react-native';
 import { globalStyles } from '../styles/globalStyles';
 import { colors } from '../styles/colors';
-import { useArchive } from '../contexts/ArchiveContext';
-import { usePets } from '../contexts/PetContext';
-import { MoreVertical } from 'lucide-react-native';
-import { Pet } from '../types/database';
+import { Pet } from '../database/types';
 
 interface PetCardProps {
   pet: Pet;
 }
 
 export function PetCard({ pet }: PetCardProps) {
-  const { archivePet } = useArchive();
-  const { deletePet } = usePets();
-
   const getHealthColor = (score: number) => {
-      if (score >= 80) return colors.semantic.success;
-  if (score >= 60) return colors.semantic.warning;
-  return colors.semantic.error;
-  };
-
-  const handleArchivePet = () => {
-    Alert.alert(
-      'Archive Pet',
-      `Would you like to archive ${pet.name}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Archive',
-          style: 'default',
-          onPress: () => {
-            archivePet(pet, 'User requested archive from pet card');
-            deletePet(pet.id);
-            Alert.alert('Pet Archived', `${pet.name} has been moved to the archive.`);
-          },
-        },
-      ]
-    );
+    if (score >= 80) return '#4CAF50'; // Green for good health
+    if (score >= 60) return '#FF9800'; // Yellow/Orange for needs attention
+    return '#F44336'; // Red for poor health
   };
 
   return (
@@ -61,6 +37,7 @@ export function PetCard({ pet }: PetCardProps) {
               </Text>
             </View>
           )}
+          
           <TouchableOpacity
             style={{
               position: 'absolute',
@@ -70,15 +47,27 @@ export function PetCard({ pet }: PetCardProps) {
               borderRadius: 16,
               padding: 4,
             }}
-            onPress={handleArchivePet}
+            onPress={() => router.push(`/(pets)/edit/${pet.id}` as any)}
           >
-            <MoreVertical size={16} color={colors.text.primary} />
+            <Edit3 size={16} color={colors.main.deepBlueGray} />
           </TouchableOpacity>
         </View>
         <View style={globalStyles.petCardContent}>
           <Text style={globalStyles.petCardName}>{pet.name}</Text>
           <Text style={globalStyles.petCardDetails}>
-            {pet.breed} • {pet.age}
+            {(() => {
+              const details = [];
+              if (pet.breed) details.push(pet.breed);
+                if (pet.age) {
+                details.push(pet.age);
+              }
+              if (pet.weight) {
+                const weightDisplay = pet.weightUnit ? `${pet.weight} ${pet.weightUnit}` : pet.weight;
+                details.push(weightDisplay);
+              }
+              if (pet.gender) details.push(pet.gender);
+              return details.join(' • ');
+            })()}
           </Text>
           
           <View style={globalStyles.petCardHealthSection}>

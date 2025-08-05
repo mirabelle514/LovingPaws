@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, Keyboard, Platform, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, Edit3, Calendar, Clock, MapPin, Phone } from 'lucide-react-native';
+import { ArrowLeft, Edit3, Clock, MapPin, Phone, ChevronDown } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { globalStyles } from '@/styles/globalStyles';
 import { colors } from '@/styles/colors';
@@ -11,10 +11,13 @@ import { PetSelector } from '@/components/PetSelector';
 export default function ScheduleVisitScreen() {
   const { pets, addHealthEntry } = usePets();
   const [selectedPet, setSelectedPet] = useState(pets.length > 0 ? pets[0].id : '');
+
+  const [showTimePeriodDropdown, setShowTimePeriodDropdown] = useState(false);
   const [appointmentData, setAppointmentData] = useState({
     appointmentType: 'Checkup',
     date: '',
     time: '',
+    timePeriod: 'AM',
     clinicName: '',
     veterinarian: '',
     reason: '',
@@ -26,14 +29,24 @@ export default function ScheduleVisitScreen() {
     'Checkup', 'Vaccination', 'Surgery', 'Emergency', 'Follow-up', 'Dental', 'Other'
   ];
 
+
+
   const handleSave = () => {
-    if (!selectedPet || !appointmentData.date || !appointmentData.clinicName) {
-      Alert.alert('Missing Information', 'Please select a pet and fill in date and clinic name.');
+    if (!selectedPet || !appointmentData.date || !appointmentData.time || !appointmentData.clinicName) {
+      Alert.alert('Missing Information', 'Please select a pet and fill in date, time, and clinic name.');
       return;
     }
 
     // Add health entry to increase health score
-    addHealthEntry(selectedPet);
+    addHealthEntry({
+      petId: selectedPet,
+      type: 'appointment',
+      title: 'Appointment Scheduled',
+      description: `${appointmentData.appointmentType} - ${appointmentData.clinicName}`,
+      date: appointmentData.date,
+      time: `${appointmentData.time} ${appointmentData.timePeriod}`,
+      notes: appointmentData.notes
+    });
 
     // Here you would typically save to a database or API
     console.log('Saving appointment data:', { petId: selectedPet, ...appointmentData });
@@ -43,16 +56,26 @@ export default function ScheduleVisitScreen() {
 
   return (
     <SafeAreaView style={globalStyles.profileContainer}>
-      <ScrollView style={globalStyles.profileScrollView} showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <ScrollView 
+          style={globalStyles.profileScrollView} 
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 100 }}
+        >
         {/* Header */}
         <View style={globalStyles.profileHeader}>
           <TouchableOpacity onPress={() => router.back()} style={globalStyles.profileHeaderBackButton}>
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <Text style={globalStyles.profileHeaderTitle}>Schedule Visit</Text>
-          <View style={globalStyles.profileHeaderSaveButton}>
-            <Edit3 size={24} color={colors.main.deepBlueGray} />
-          </View>
+          <TouchableOpacity onPress={handleSave} style={globalStyles.profileHeaderSaveButton}>
+            <Text style={globalStyles.profileSaveButtonText}>Save</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Pet Selection */}
@@ -81,7 +104,7 @@ export default function ScheduleVisitScreen() {
                   ]}
                   onPress={() => setAppointmentData({ ...appointmentData, appointmentType: type })}
                 >
-                  <Calendar size={20} color={appointmentData.appointmentType === type ? colors.background.primary : colors.main.deepBlueGray} />
+                  <Clock size={20} color={appointmentData.appointmentType === type ? colors.background.primary : colors.main.deepBlueGray} />
                   <Text style={[
                     globalStyles.petTypeLabel,
                     appointmentData.appointmentType === type && globalStyles.petTypeSelectedLabel,
@@ -98,21 +121,80 @@ export default function ScheduleVisitScreen() {
             <TextInput
               style={globalStyles.profileFormInput}
               value={appointmentData.date}
-              onChangeText={(text) => setAppointmentData({ ...appointmentData, date: text })}
-              placeholder="YYYY-MM-DD"
-              placeholderTextColor={colors.text.tertiary}
+              onChangeText={(text) => {
+                // Remove all non-numeric characters
+                const numbersOnly = text.replace(/[^0-9]/g, '');
+                
+                // Format as YYYY/MM/DD
+                let formatted = '';
+                if (numbersOnly.length >= 1) formatted += numbersOnly.slice(0, 4);
+                if (numbersOnly.length >= 5) formatted += '/' + numbersOnly.slice(4, 6);
+                if (numbersOnly.length >= 7) formatted += '/' + numbersOnly.slice(6, 8);
+                
+                setAppointmentData({ ...appointmentData, date: formatted });
+              }}
+              placeholder="YYYY/MM/DD"
+              placeholderTextColor={colors.text.secondary}
+              keyboardType="numeric"
+              returnKeyType="done"
+              onSubmitEditing={() => Keyboard.dismiss()}
             />
           </View>
 
           <View style={globalStyles.profileFormField}>
-            <Text style={globalStyles.profileFormLabel}>Time</Text>
-            <TextInput
-              style={globalStyles.profileFormInput}
-              value={appointmentData.time}
-              onChangeText={(text) => setAppointmentData({ ...appointmentData, time: text })}
-              placeholder="HH:MM"
-              placeholderTextColor={colors.text.tertiary}
-            />
+            <Text style={globalStyles.profileFormLabel}>Time *</Text>
+            <View style={globalStyles.formRow}>
+              <TextInput
+                style={[globalStyles.profileFormInput, globalStyles.formInputFlex]}
+                value={appointmentData.time}
+                onChangeText={(text) => {
+                  // Remove all non-numeric characters
+                  const numbersOnly = text.replace(/[^0-9]/g, '');
+                  
+                  // Format as HH:MM
+                  let formatted = '';
+                  if (numbersOnly.length >= 1) formatted += numbersOnly.slice(0, 2);
+                  if (numbersOnly.length >= 3) formatted += ':' + numbersOnly.slice(2, 4);
+                  
+                  setAppointmentData({ ...appointmentData, time: formatted });
+                }}
+                placeholder="HH:MM"
+                placeholderTextColor={colors.text.secondary}
+                keyboardType="numeric"
+                returnKeyType="done"
+                onSubmitEditing={() => Keyboard.dismiss()}
+              />
+              <TouchableOpacity
+                style={[globalStyles.profileFormInput, globalStyles.formDropdownFlex]}
+                onPress={() => setShowTimePeriodDropdown(!showTimePeriodDropdown)}
+              >
+                <Text style={[globalStyles.dropdownText, !appointmentData.timePeriod && globalStyles.dropdownTextPlaceholder]}>
+                  {appointmentData.timePeriod || 'AM/PM'}
+                </Text>
+                <ChevronDown size={16} color={colors.text.secondary} />
+              </TouchableOpacity>
+            </View>
+            {showTimePeriodDropdown && (
+              <View style={[globalStyles.dropdownContainer, { right: 0, width: '40%' }]}>
+                {['AM', 'PM'].map((period) => (
+                  <TouchableOpacity
+                    key={period}
+                    style={globalStyles.dropdownOption}
+                    onPress={() => {
+                      setAppointmentData({ ...appointmentData, timePeriod: period });
+                      setShowTimePeriodDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      globalStyles.dropdownOptionText,
+                      appointmentData.timePeriod === period ? globalStyles.dropdownOptionTextSelected : globalStyles.dropdownOptionTextUnselected
+                    ]}>
+                      {period}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
           </View>
 
           <View style={globalStyles.profileFormField}>
@@ -123,6 +205,8 @@ export default function ScheduleVisitScreen() {
               onChangeText={(text) => setAppointmentData({ ...appointmentData, clinicName: text })}
               placeholder="Veterinary clinic name"
               placeholderTextColor={colors.text.tertiary}
+              returnKeyType="done"
+              onSubmitEditing={() => Keyboard.dismiss()}
             />
           </View>
 
@@ -134,6 +218,8 @@ export default function ScheduleVisitScreen() {
               onChangeText={(text) => setAppointmentData({ ...appointmentData, veterinarian: text })}
               placeholder="Veterinarian name"
               placeholderTextColor={colors.text.tertiary}
+              returnKeyType="done"
+              onSubmitEditing={() => Keyboard.dismiss()}
             />
           </View>
 
@@ -148,6 +234,8 @@ export default function ScheduleVisitScreen() {
               multiline
               numberOfLines={3}
               textAlignVertical="top"
+              returnKeyType="default"
+              blurOnSubmit={true}
             />
           </View>
 
@@ -162,6 +250,8 @@ export default function ScheduleVisitScreen() {
               multiline
               numberOfLines={3}
               textAlignVertical="top"
+              returnKeyType="default"
+              blurOnSubmit={true}
             />
           </View>
         </View>
@@ -186,10 +276,11 @@ export default function ScheduleVisitScreen() {
         {/* Save Button */}
         <View style={globalStyles.profileSection}>
           <TouchableOpacity style={globalStyles.profileSaveButton} onPress={handleSave}>
-            <Text style={globalStyles.profileSaveButtonText}>Schedule Appointment</Text>
+            <Text style={globalStyles.profileSaveButtonText}>Save Appointment</Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 } 

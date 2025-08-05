@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, Image, Keyboard, Platform, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Edit3, Camera } from 'lucide-react-native';
 import { router } from 'expo-router';
@@ -72,16 +72,26 @@ export default function ProfileEditScreen() {
 
   return (
     <SafeAreaView style={globalStyles.profileContainer}>
-      <ScrollView style={globalStyles.profileScrollView} showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <ScrollView 
+          style={globalStyles.profileScrollView} 
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 100 }}
+        >
         {/* Header */}
         <View style={globalStyles.profileHeader}>
           <TouchableOpacity onPress={() => router.back()} style={globalStyles.profileHeaderBackButton}>
             <ArrowLeft size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <Text style={globalStyles.profileHeaderTitle}>Edit Profile</Text>
-          <View style={globalStyles.profileHeaderSaveButton}>
-            <Edit3 size={24} color={colors.main.deepBlueGray} />
-          </View>
+          <TouchableOpacity onPress={handleSave} style={globalStyles.profileHeaderSaveButton}>
+            <Text style={globalStyles.profileSaveButtonText}>Save</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Avatar Section */}
@@ -116,6 +126,8 @@ export default function ProfileEditScreen() {
               onChangeText={(text) => setFormData({ ...formData, userName: text })}
               placeholder="Enter your full name"
               placeholderTextColor={colors.text.secondary}
+              returnKeyType="done"
+              onSubmitEditing={() => Keyboard.dismiss()}
             />
           </View>
 
@@ -129,6 +141,8 @@ export default function ProfileEditScreen() {
               placeholderTextColor={colors.text.secondary}
               keyboardType="email-address"
               autoCapitalize="none"
+              returnKeyType="done"
+              onSubmitEditing={() => Keyboard.dismiss()}
             />
           </View>
 
@@ -161,10 +175,11 @@ export default function ProfileEditScreen() {
         {/* Save Profile Button */}
         <View style={globalStyles.profileSection}>
           <TouchableOpacity style={globalStyles.profileSaveButton} onPress={handleSave}>
-            <Text style={globalStyles.profileSaveButtonText}>Save Profile</Text>
+            <Text style={globalStyles.profileSaveButtonText}>Save Changes</Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 } 

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Alert } from 'react-native';
-import { databaseService } from '../services/DatabaseService';
-import { Pet, HealthEntry } from '../types/database';
+import { databaseService } from '../database/DatabaseService';
+import { Pet, HealthEntry } from '../database/types';
 import { generateId, calculateHealthScore } from '../utils/helpers';
 
 interface PetContextType {
@@ -12,6 +12,7 @@ interface PetContextType {
   deletePet: (id: string) => Promise<void>;
   getPetById: (id: string) => Pet | undefined;
   addHealthEntry: (entry: Omit<HealthEntry, 'id' | 'createdAt' | 'syncedToCloud'>) => Promise<void>;
+  updateHealthEntry: (entry: HealthEntry) => Promise<void>;
   getHealthEntries: (petId?: string) => Promise<HealthEntry[]>;
   refreshPets: () => Promise<void>;
 }
@@ -142,6 +143,26 @@ export function PetProvider({ children }: PetProviderProps) {
     }
   };
 
+  const updateHealthEntry = async (entry: HealthEntry) => {
+    try {
+      await databaseService.updateHealthEntry(entry);
+      await databaseService.addToSyncQueue('health_entries', entry.id, 'UPDATE', entry);
+      
+      // Update pet's health score
+      const pet = getPetById(entry.petId);
+      if (pet) {
+        const healthEntries = await databaseService.getHealthEntries(entry.petId);
+        const newHealthScore = calculateHealthScore(healthEntries);
+        await updatePet(entry.petId, { healthScore: newHealthScore });
+      }
+      
+      Alert.alert('Success', 'Health entry updated successfully!');
+    } catch (error) {
+      console.error('Error updating health entry:', error);
+      Alert.alert('Error', 'Failed to update health entry. Please try again.');
+    }
+  };
+
   const getHealthEntries = async (petId?: string) => {
     try {
       return await databaseService.getHealthEntries(petId);
@@ -165,6 +186,7 @@ export function PetProvider({ children }: PetProviderProps) {
       deletePet, 
       getPetById, 
       addHealthEntry,
+      updateHealthEntry,
       getHealthEntries,
       refreshPets
     }}>

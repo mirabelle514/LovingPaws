@@ -5,14 +5,18 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
+  Keyboard,
+  Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, MapPin, Phone, Clock, Star, Navigation, Calendar, TriangleAlert as AlertTriangle } from 'lucide-react-native';
+import { Search, MapPin, Phone, Clock, Star, Navigation, Calendar, TriangleAlert as AlertTriangle, ArrowLeft } from 'lucide-react-native';
 
 import { VetClinicCard } from '@/components/VetClinicCard';
 import { EmergencyContact } from '@/components/EmergencyContact';
 import { globalStyles } from '@/styles/globalStyles';
 import { colors } from '@/styles/colors';
+import { router } from 'expo-router';
 
 export default function VeterinaryScreen() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -55,10 +59,28 @@ export default function VeterinaryScreen() {
 
   return (
     <SafeAreaView style={globalStyles.veterinaryContainer}>
-      <ScrollView style={globalStyles.veterinaryScrollView} showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <ScrollView 
+          style={globalStyles.veterinaryScrollView} 
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 100 }}
+        >
         {/* Header */}
         <View style={globalStyles.veterinaryHeader}>
-          <Text style={globalStyles.veterinaryTitle}>Veterinary Care</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+            <TouchableOpacity
+              style={globalStyles.headerButton}
+              onPress={() => router.push('/(tabs)/' as any)}
+            >
+              <ArrowLeft size={24} color={colors.text.primary} />
+            </TouchableOpacity>
+            <Text style={globalStyles.veterinaryTitle}>Veterinary Care</Text>
+          </View>
           <Text style={globalStyles.veterinarySubtitle}>
             Find trusted veterinarians near you
           </Text>
@@ -79,6 +101,8 @@ export default function VeterinaryScreen() {
               placeholderTextColor={colors.text.tertiary}
               value={searchQuery}
               onChangeText={setSearchQuery}
+              returnKeyType="search"
+              onSubmitEditing={() => Keyboard.dismiss()}
             />
           </View>
         </View>
@@ -128,7 +152,8 @@ export default function VeterinaryScreen() {
             </View>
           </View>
         </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

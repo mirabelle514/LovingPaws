@@ -8,7 +8,6 @@ interface EntryType {
   title: string;
   subtitle: string;
   icon: React.ReactNode;
-  gradient: readonly string[];
 }
 
 interface EntryTypeCardProps {

@@ -11,7 +11,6 @@ interface AnalyticsData {
   change: string;
   trend: 'up' | 'down' | 'neutral';
   icon: React.ReactNode;
-  gradient: readonly string[];
 }
 
 interface AnalyticsCardProps {

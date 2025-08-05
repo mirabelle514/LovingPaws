@@ -6,7 +6,10 @@ export interface Pet {
   type: string;
   breed?: string;
   age?: string;
+  ageUnit?: string;
   weight?: string;
+  weightUnit?: string;
+  gender?: string;
   color?: string;
   microchipId?: string;
   dateOfBirth?: string;

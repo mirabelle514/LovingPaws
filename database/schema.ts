@@ -1,4 +1,4 @@
-import { TABLES } from '../types/database';
+import { TABLES } from './types';
 
 export const CREATE_TABLES = {
   [TABLES.PETS]: `
@@ -8,7 +8,10 @@ export const CREATE_TABLES = {
       type TEXT NOT NULL,
       breed TEXT,
       age TEXT,
+      ageUnit TEXT,
       weight TEXT,
+      weightUnit TEXT,
+      gender TEXT,
       color TEXT,
       microchipId TEXT,
       dateOfBirth TEXT,
